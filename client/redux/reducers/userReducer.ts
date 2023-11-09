@@ -1,12 +1,35 @@
 import {createReducer} from '@reduxjs/toolkit';
+import {RootState} from '../Store';
 
-const intialState = {
+export type User = {
+  _id: string;
+  username: string;
+  name?: string;
+  password?: string;
+  role?: 'User' | 'Admin';
+  avatar?: {
+    url: string;
+    public_id: string;
+  };
+  followers: User[];
+  following: User[];
+};
+
+export type IUserState = {
+  isAuthenticated: boolean;
+  loading: boolean;
+  isLoading: boolean;
+  user?: User;
+  users?: User[];
+  token?: string;
+  error?: any;
+};
+const intialState: IUserState = {
   isAuthenticated: false,
   loading: false,
   isLoading: false,
-  user: {},
   users: [],
-  token:"",
+  token: '',
   error: null,
 };
 
@@ -52,7 +75,7 @@ export const userReducer = createReducer(intialState, {
     state.isAuthenticated = false;
     state.loading = false;
     state.error = action.payload;
-    state.user = {};
+    state.user = undefined;
   },
   userLogoutRequest: state => {
     state.loading = true;
@@ -60,7 +83,7 @@ export const userReducer = createReducer(intialState, {
   userLogoutSuccess: state => {
     state.loading = false;
     state.isAuthenticated = false;
-    state.user = {};
+    state.user = undefined;
   },
   userLogoutFailed: state => {
     state.loading = false;
@@ -68,11 +91,11 @@ export const userReducer = createReducer(intialState, {
   getUsersRequest: state => {
     state.isLoading = true;
   },
-  getUsersSuccess: (state,action) => {
+  getUsersSuccess: (state, action) => {
     state.isLoading = false;
     state.users = action.payload;
   },
-  getUsersFailed: (state,action) => {
+  getUsersFailed: (state, action) => {
     state.isLoading = false;
     state.users = action.payload;
   },
@@ -81,3 +104,7 @@ export const userReducer = createReducer(intialState, {
     state.isAuthenticated = false;
   },
 });
+
+export const selectUser: (state: RootState) => IUserState = (
+  state: RootState,
+) => state.user;

@@ -1,19 +1,21 @@
-import {
-  View,
-  Text,
-  SafeAreaView,
-  Image,
-  TextInput,
-  ScrollView,
-} from 'react-native';
-import React, {useState} from 'react';
-import {TouchableOpacity} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
-import ImagePicker, {ImageOrVideo} from 'react-native-image-crop-picker';
-import getTimeDuration from '../common/TimeGenerator';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import React, {useState} from 'react';
+import {
+  Image,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import ImagePicker, {ImageOrVideo} from 'react-native-image-crop-picker';
+import {useDispatch, useSelector} from 'react-redux';
 import {URI} from '../../redux/URI';
-import { getAllPosts } from '../../redux/actions/postAction';
+import {getAllPosts} from '../../redux/actions/postAction';
+import {selectUser} from '../../redux/reducers/userReducer';
+import getTimeDuration from '../common/TimeGenerator';
 
 type Props = {
   item: any;
@@ -25,7 +27,7 @@ type Props = {
 const CreateRepliesScreen = ({navigation, route}: Props) => {
   const post = route.params.item;
   const postId = route.params.postId;
-  const {user, token} = useSelector((state: any) => state.user);
+  const {user} = useSelector(selectUser);
   const [image, setImage] = useState('');
   const [title, setTitle] = useState('');
   const dispatch = useDispatch();
@@ -39,7 +41,7 @@ const CreateRepliesScreen = ({navigation, route}: Props) => {
       includeBase64: true,
     }).then((image: ImageOrVideo | null) => {
       if (image) {
-        setImage('data:image/jpeg;base64,' + image.data);
+        setImage('data:image/jpeg;base64,' + image.exif);
       }
     });
   };
@@ -48,6 +50,7 @@ const CreateRepliesScreen = ({navigation, route}: Props) => {
   const formattedDuration = getTimeDuration(time);
 
   const createReplies = async () => {
+    const token = await AsyncStorage.getItem('token');
     if (!postId) {
       await axios
         .put(
@@ -73,7 +76,6 @@ const CreateRepliesScreen = ({navigation, route}: Props) => {
           setImage('');
         });
     } else {
-      console.log(postId,post._id);
       await axios
         .put(
           `${URI}/add-reply`,
@@ -164,14 +166,14 @@ const CreateRepliesScreen = ({navigation, route}: Props) => {
           <View className="p-3">
             <View className="flex-row">
               <Image
-                source={{uri: user.avatar.url}}
+                source={{uri: user?.avatar?.url}}
                 width={40}
                 height={40}
                 borderRadius={100}
               />
               <View className="pl-3">
                 <Text className="text-black font-[500] text-[18px]">
-                  {user.name}
+                  {user?.name}
                 </Text>
                 <TextInput
                   placeholder={`Reply to ${post.user.name}...`}

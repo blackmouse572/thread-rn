@@ -1,19 +1,20 @@
-import {
-  View,
-  Text,
-  SafeAreaView,
-  Image,
-  TextInput,
-  FlatList,
-  TouchableOpacity,
-} from 'react-native';
 import React, {useEffect, useState} from 'react';
+import {
+  FlatList,
+  Image,
+  SafeAreaView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {
   followUserAction,
   getAllUsers,
   unfollowUserAction,
 } from '../../redux/actions/userAction';
+import {User, selectUser} from '../../redux/reducers/userReducer';
 import Loader from '../common/Loader';
 
 type Props = {
@@ -21,15 +22,8 @@ type Props = {
 };
 
 const SearchScreen = ({navigation}: Props) => {
-  const [data, setData] = useState([
-    {
-      name: '',
-      userName: '',
-      avatar: {url: ''},
-      followers: [],
-    },
-  ]);
-  const {users, user, isLoading} = useSelector((state: any) => state.user);
+  const [data, setData] = useState<User[]>([]);
+  const {users, user, isLoading} = useSelector(selectUser);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -39,19 +33,21 @@ const SearchScreen = ({navigation}: Props) => {
   useEffect(() => {
     if (users) {
       setData(users);
+      console.log('[USERS] Set all users', users);
     }
   }, [users]);
 
-  const handleSearchChange = (e: any) => {
+  const handleSearchChange = (e: string) => {
+    console.log('[USERS] Search change', e);
     if (e.length !== 0) {
       const filteredUsers =
         users &&
-        users.filter((i: any) =>
-          i.name.toLowerCase().includes(e.toLowerCase()),
-        );
-      setData(filteredUsers);
+        users.filter(i => i.username?.toLowerCase().includes(e.toLowerCase()));
+      console.log('[USERS] Filtered users', filteredUsers);
+      setData(filteredUsers || []);
     } else {
-      setData(users);
+      console.log('[USERS] Set all users', users);
+      setData(users || []);
     }
   };
 
@@ -85,15 +81,15 @@ const SearchScreen = ({navigation}: Props) => {
               renderItem={({item}) => {
                 const handleFollowUnfollow = async (e: any) => {
                   try {
-                    if (e.followers.find((i: any) => i.userId === user._id)) {
+                    if (e.followers.find((i: any) => i.userId === user?._id)) {
                       await unfollowUserAction({
-                        userId: user._id,
+                        userId: user?._id || '',
                         users,
                         followUserId: e._id,
                       })(dispatch);
                     } else {
                       await followUserAction({
-                        userId: user._id,
+                        userId: user?._id || '',
                         users,
                         followUserId: e._id,
                       })(dispatch);
@@ -135,7 +131,7 @@ const SearchScreen = ({navigation}: Props) => {
                           </View>
 
                           <Text className="pl-3 text-[18px] text-black">
-                            {item.userName}
+                            {item.username}
                           </Text>
                           <Text className="pl-3 mt-1 text-[16px] text-[#444]">
                             {item.followers.length} followers
@@ -146,9 +142,10 @@ const SearchScreen = ({navigation}: Props) => {
                             className="rounded-[8px] w-[100px] flex-row justify-center items-center h-[35px] border border-[#0000004b]"
                             onPress={() => handleFollowUnfollow(item)}>
                             <Text className="text-black">
-                              {item.followers.find(
-                                (i: any) => i.userId === user._id,
-                              )
+                              {item.followers.find((i: any) => {
+                                console.log({user: i});
+                                return i.userId === user?._id;
+                              })
                                 ? 'Following'
                                 : 'Follow'}
                             </Text>

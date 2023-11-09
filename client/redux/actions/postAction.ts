@@ -2,13 +2,14 @@ import axios from 'axios';
 import {URI} from '../URI';
 import {Dispatch} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {User} from '../reducers/userReducer';
 
 // create post
 export const createPostAction =
   (
     title: string,
     image: string,
-    user: Object,
+    user: User,
     replies: Array<{title: string; image: string; user: any}>,
   ) =>
   async (dispatch: Dispatch<any>) => {

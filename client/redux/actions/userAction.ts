@@ -1,7 +1,7 @@
-import axios from 'axios';
-import {URI} from '../URI';
-import {Dispatch} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import {Dispatch} from 'react';
+import {URI} from '../URI';
 
 // register user
 export const registerUser =
@@ -122,10 +122,10 @@ export const getAllUsers = () => async (dispatch: Dispatch<any>) => {
     const {data} = await axios.get(`${URI}/users`, {
       headers: {Authorization: `Bearer ${token}`},
     });
-
+    console.log('[DATA]', data);
     dispatch({
       type: 'getUsersSuccess',
-      payload: data.users,
+      payload: data.users || [],
     });
   } catch (error: any) {
     dispatch({

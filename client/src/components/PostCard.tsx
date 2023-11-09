@@ -1,21 +1,23 @@
+import axios from 'axios';
+import React, {useEffect, useState} from 'react';
 import {
-  View,
+  Image,
+  Modal,
   Text,
   TouchableOpacity,
-  Modal,
   TouchableWithoutFeedback,
+  View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {Image} from 'react-native';
-import getTimeDuration from '../common/TimeGenerator';
+import {URI} from '../../redux/URI';
 import {
   addLikes,
   getAllPosts,
   removeLikes,
 } from '../../redux/actions/postAction';
-import axios from 'axios';
-import {URI} from '../../redux/URI';
+import {Post} from '../../redux/reducers/postReducer';
+import {User} from '../../redux/reducers/userReducer';
+import getTimeDuration from '../common/TimeGenerator';
 import PostDetailsCard from './PostDetailsCard';
 
 type Props = {
@@ -27,14 +29,18 @@ type Props = {
 };
 
 const PostCard = ({item, isReply, navigation, postId, replies}: Props) => {
-  const {user, token,users} = useSelector((state: any) => state.user);
+  const {user, token, users} = useSelector((state: any) => state.user);
   const {posts} = useSelector((state: any) => state.post);
   const [openModal, setOpenModal] = useState(false);
   const dispatch = useDispatch();
-  const [userInfo, setUserInfo] = useState({
-    name: '',
+  const [userInfo, setUserInfo] = useState<User>({
+    _id: '',
+    followers: [],
+    following: [],
+    username: '',
     avatar: {
       url: 'https://res.cloudinary.com/dshp9jnuy/image/upload/v1665822253/avatars/nrxsg8sd9iy10bbsoenn.png',
+      public_id: '',
     },
   });
   const time = item?.createdAt;
@@ -56,7 +62,7 @@ const PostCard = ({item, isReply, navigation, postId, replies}: Props) => {
       });
   };
 
-  const reactsHandler = (e: any) => {
+  const reactsHandler = (e: Post) => {
     if (item.likes.length !== 0) {
       const isLikedBefore = item.likes.find((i: any) => i.userId === user._id);
       if (isLikedBefore) {
@@ -69,7 +75,7 @@ const PostCard = ({item, isReply, navigation, postId, replies}: Props) => {
     }
   };
 
-  const deletePostHandler = async (e: any) => {
+  const deletePostHandler = async (e: string) => {
     await axios
       .delete(`${URI}/delete-post/${e}`, {
         headers: {
@@ -82,13 +88,13 @@ const PostCard = ({item, isReply, navigation, postId, replies}: Props) => {
   };
 
   useEffect(() => {
-   if(users){
-    const updatedUsers = [...users, user];
-    const userData = updatedUsers.find((user: any) =>
-        user._id === item.user._id
-     );
-     setUserInfo(userData);
-   }
+    if (users) {
+      const updatedUsers = [...users, user];
+      const userData = updatedUsers.find(
+        (user: any) => user._id === item.user._id,
+      );
+      setUserInfo(userData);
+    }
   }, [users]);
 
   return (
@@ -135,6 +141,7 @@ const PostCard = ({item, isReply, navigation, postId, replies}: Props) => {
             </TouchableOpacity>
           </View>
         </View>
+
         <View className="ml-[50px] my-3">
           {item.image && (
             <Image
@@ -195,26 +202,6 @@ const PostCard = ({item, isReply, navigation, postId, replies}: Props) => {
               }}
               width={22}
               height={22}
-              className="ml-5"
-            />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image
-              source={{
-                uri: 'https://cdn-icons-png.flaticon.com/512/3905/3905866.png',
-              }}
-              width={25}
-              height={25}
-              className="ml-5"
-            />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image
-              source={{
-                uri: 'https://cdn-icons-png.flaticon.com/512/10863/10863770.png',
-              }}
-              width={25}
-              height={25}
               className="ml-5"
             />
           </TouchableOpacity>
